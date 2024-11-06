@@ -6,6 +6,7 @@ import com.edigestProject1.journalApp.repository.JournalEntryRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,13 +21,20 @@ public class JournalEntryService {
     @Autowired
     UserService userService;
 
+    @Transactional
     public boolean createEntry(JournalEntry myEntry, String userName){
-        User user = userService.findByUserName(userName);
-        myEntry.setDate(LocalDate.now());
-        JournalEntry saved = journalEntryRepository.save(myEntry);
-        user.getJournalEntries().add(saved);
-        userService.save(user);
-        return true;
+       try {
+           User user = userService.findByUserName(userName);
+           myEntry.setDate(LocalDate.now());
+           JournalEntry saved = journalEntryRepository.save(myEntry);
+           user.getJournalEntries().add(saved);
+           userService.save(user);
+           return true;
+       }
+       catch (Exception e){
+           System.out.println(e);
+           throw new RuntimeException("An error occured while saving the journal entry.",e);
+       }
     }
 
     public boolean createEntry(JournalEntry myEntry){
